@@ -1,0 +1,44 @@
+{
+  "name": "trace-agent-mcp",
+  "version": "0.1.0",
+  "description": "Access Unreal Insights .utrace files through a local MCP server backed by TraceAgentCli.",
+  "author": {
+    "name": "OpenAI Codex",
+    "email": "support@openai.com",
+    "url": "https://openai.com/"
+  },
+  "homepage": "https://openai.com/",
+  "repository": "https://openai.com/",
+  "license": "MIT",
+  "keywords": [
+    "unreal",
+    "insights",
+    "trace",
+    "utrace",
+    "mcp"
+  ],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Trace Agent MCP",
+    "shortDescription": "Query Unreal Insights trace files from Codex",
+    "longDescription": "A repo-local MCP wrapper around TraceAgentCli for listing tracks and querying timing events, frames, counters, and bookmarks from .utrace files.",
+    "developerName": "OpenAI",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Open a .utrace file and list its tracks",
+      "Find a track by name and query its events",
+      "Inspect frame tracks, counters, and bookmarks in a trace"
+    ],
+    "brandColor": "#0F766E",
+    "composerIcon": "./assets/trace-agent.svg",
+    "logo": "./assets/trace-agent.svg",
+    "screenshots": []
+  }
+}
