@@ -1,6 +1,133 @@
 # unrealinsights-mcp
 
-`unrealinsights-mcp` is a standalone repository that packages the current Unreal Insights MCP work into a form you can sync into a source-built Unreal Engine checkout.
+`unrealinsights-mcp` supports two workflows:
+
+- Source-sync workflow
+  You sync these files into a source-built Unreal Engine checkout and build `TraceAgentCli` there.
+- Release workflow
+  You build `TraceAgentCli` once on a build machine, package a release bundle, and let target machines only download the bundle and run the MCP.
+
+If your target machine already has Python and you want "download and run" with Claude Code, the release workflow is the simpler option.
+
+## Recommended For Claude Code Targets
+
+For target machines that use Claude Code, the recommended flow is:
+
+1. Build `TraceAgentCli.exe` on your build machine.
+2. Run `scripts/make-release.ps1` in this repository.
+3. Upload the generated zip to GitHub Releases.
+4. On the target machine, download the release zip and unzip it anywhere.
+5. Register the bundled MCP launcher in Claude Code.
+
+This avoids syncing into a full Unreal Engine checkout on the target machine.
+
+## Release Workflow
+
+### Build Machine
+
+You still need one machine that can build `TraceAgentCli` from Unreal source.
+
+After building `TraceAgentCli`, run:
+
+```powershell
+pwsh -File .\scripts\make-release.ps1 `
+  -EngineRoot 'F:\Source\UE\uesrc_main\Engine' `
+  -Version 'v0.1.0'
+```
+
+If `pwsh` is not available:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\make-release.ps1 `
+  -EngineRoot 'F:\Source\UE\uesrc_main\Engine' `
+  -Version 'v0.1.0'
+```
+
+This creates:
+
+- `dist\unrealinsights-mcp-release-v0.1.0\`
+- `dist\unrealinsights-mcp-release-v0.1.0.zip`
+
+The release bundle contains:
+
+- `Binaries\Win64\TraceAgentCli.exe`
+- `Programs\TraceAgentMcp\trace_agent_mcp.py`
+- `Plugins\trace-agent-mcp\...`
+- `.mcp.json`
+- `README.md`
+
+### Target Machine
+
+The target machine only needs:
+
+- Python on `PATH`
+- Claude Code
+
+It does **not** need:
+
+- Unreal source
+- UBT
+- Visual Studio Unreal build setup
+
+#### Option A: Open the release folder as a Claude Code project
+
+The generated release bundle includes a project-scoped `.mcp.json` in the root.
+
+If you open the extracted release folder itself as the Claude Code project, Claude Code can use that `.mcp.json` directly.
+
+#### Option B: Add it to Claude Code as a user-scoped MCP server
+
+Anthropic's Claude Code MCP docs indicate Claude Code supports project/user-scoped MCP servers and environment-variable expansion in `.mcp.json`. It also supports local stdio servers launched by command and args. Source:
+
+- [Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp)
+
+For a release extracted to:
+
+- `D:\Tools\unrealinsights-mcp-release-v0.1.0`
+
+you can add it as a user-scoped server like this:
+
+```powershell
+claude mcp add unrealinsights-mcp --scope user -- `
+  python D:\Tools\unrealinsights-mcp-release-v0.1.0\Plugins\trace-agent-mcp\scripts\start-trace-agent-mcp.py
+```
+
+If you want a default trace file on that target machine, set it when adding the server:
+
+```powershell
+claude mcp add unrealinsights-mcp --scope user `
+  --env TRACE_AGENT_DEFAULT_TRACE=D:\Traces\sample.utrace -- `
+  python D:\Tools\unrealinsights-mcp-release-v0.1.0\Plugins\trace-agent-mcp\scripts\start-trace-agent-mcp.py
+```
+
+If you later want to inspect the registered server:
+
+```powershell
+claude mcp get unrealinsights-mcp
+```
+
+### Keeping Release Targets Updated
+
+The simplest update flow for release consumers is:
+
+1. Download the latest GitHub Release zip.
+2. Extract it over the previous install directory, or extract to a versioned directory and switch your Claude Code MCP registration to the new path.
+
+For example:
+
+```powershell
+claude mcp remove unrealinsights-mcp
+claude mcp add unrealinsights-mcp --scope user -- `
+  python D:\Tools\unrealinsights-mcp-release-v0.1.1\Plugins\trace-agent-mcp\scripts\start-trace-agent-mcp.py
+```
+
+If you prefer stable paths, always extract to the same directory:
+
+- `D:\Tools\unrealinsights-mcp-current`
+
+and overwrite that directory with the latest release contents.
+
+Then your Claude Code registration does not need to change.
 
 It contains four pieces:
 

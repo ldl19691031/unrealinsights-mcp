@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "unrealinsights-mcp": {
+      "command": "${TRACE_AGENT_PYTHON:-python}",
+      "args": [
+        "./Plugins/trace-agent-mcp/scripts/start-trace-agent-mcp.py"
+      ],
+      "cwd": "."
+    }
+  }
+}
